@@ -16,7 +16,7 @@ let locale;
 function offsetFromString(string) {
   const parts = string.match(/([+-]|\d\d)/g);
   const minutes = +(parts[1] * 60) + +parts[2];
-  return minutes === 0 ? 0 : parts[0] === '+' ? -minutes : minutes; // eslint-disable-line no-nested-ternary
+  return minutes === 0 ? 0 : parts[0] === '+' ? -minutes : minutes;
 }
 
 const addInput = function(property) {
@@ -30,7 +30,7 @@ const zoneExpressions = [
   function(input) {
     const zone = this.zone || (this.zone = {});
     zone.offset = offsetFromString(input);
-  }
+  },
 ];
 
 const expressions = {
@@ -38,31 +38,31 @@ const expressions = {
     matchUpperCaseAMPM,
     function(input) {
       this.afternoon = input === 'PM';
-    }
+    },
   ],
   a: [
     matchLowerCaseAMPM,
     function(input) {
       this.afternoon = input === 'pm';
-    }
+    },
   ],
   S: [
     match1,
     function(input) {
       this.milliseconds = +input * 100;
-    }
+    },
   ],
   SS: [
     match2,
     function(input) {
       this.milliseconds = +input * 10;
-    }
+    },
   ],
   SSS: [
     match3,
     function(input) {
       this.milliseconds = +input;
-    }
+    },
   ],
   s: [match1to2, addInput('seconds')],
   ss: [match1to2, addInput('seconds')],
@@ -85,7 +85,7 @@ const expressions = {
           this.day = i;
         }
       }
-    }
+    },
   ],
   M: [match1to2, addInput('month')],
   MM: [match2, addInput('month')],
@@ -100,7 +100,7 @@ const expressions = {
         throw new Error();
       }
       this.month = matchIndex + 1;
-    }
+    },
   ],
   MMMM: [
     matchWord,
@@ -111,7 +111,7 @@ const expressions = {
         throw new Error();
       }
       this.month = matchIndex + 1;
-    }
+    },
   ],
   Y: [matchSigned, addInput('year')],
   YY: [
@@ -119,11 +119,11 @@ const expressions = {
     function(input) {
       input = +input;
       this.year = input + (input > 68 ? 1900 : 2000);
-    }
+    },
   ],
   YYYY: [match4, addInput('year')],
   Z: zoneExpressions,
-  ZZ: zoneExpressions
+  ZZ: zoneExpressions,
 };
 
 function correctHours(time) {
@@ -178,29 +178,9 @@ function makeParser(format) {
 const parseFormattedInput = (input, format, utc) => {
   try {
     const parser = makeParser(format);
-    const {
-      year,
-      month,
-      day,
-      hours,
-      minutes,
-      seconds,
-      milliseconds,
-      zone
-    } = parser(input);
+    const { year, month, day, hours, minutes, seconds, milliseconds, zone } = parser(input);
     if (zone) {
-      return new Date(
-        Date.UTC(
-          year,
-          month - 1,
-          day,
-          hours || 0,
-          minutes || 0,
-          seconds || 0,
-          milliseconds || 0
-        ) +
-          zone.offset * 60 * 1000
-      );
+      return new Date(Date.UTC(year, month - 1, day, hours || 0, minutes || 0, seconds || 0, milliseconds || 0) + zone.offset * 60 * 1000);
     }
     const now = new Date();
     const y = year || now.getFullYear();
