@@ -1,4 +1,5 @@
 import { toDate, isValidDate } from './util';
+import { defaultLocale, Locale } from './locale';
 
 const REGEX_FORMAT = /\[([^\]]+)]|YY(?:YY)?|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|m{1,2}|s{1,2}|Z{1,2}|S{1,3}|a|A/g;
 
@@ -18,30 +19,15 @@ function formatTimezone(offset: number, delimeter = '') {
   return sign + pad(hours, 2) + delimeter + pad(minutes, 2);
 }
 
-interface Locale {
-  months: string[];
-  monthsShort: string[];
-  weekdays: string[];
-  weekdaysShort: string[];
-  weekdaysMin: string[];
-  ordinal?: () => string;
-  meridiemParse?: RegExp;
-  meridiem?: (hours: number, minutes: number, isLowercase: boolean) => string;
-}
-
-const defaultLocale: Locale = {
-  months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-  monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-  weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-  weekdaysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-};
-
 interface Formatter {
   [key: string]: (date: Date, locale?: Locale) => string | number;
 }
 
-const meridiem = function(hours: number, minutes: number, isLowercase: boolean) {
+const meridiem = function(
+  hours: number,
+  minutes: number,
+  isLowercase: boolean
+) {
   const m = hours < 12 ? 'AM' : 'PM';
   return isLowercase ? m.toLocaleLowerCase() : m;
 };

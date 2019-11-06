@@ -1,4 +1,4 @@
-import { isValidDate } from './util';
+import { Locale, defaultLocale } from './locale';
 
 const formattingTokens = /(\[[^[]*\])|([-:/.()\s]+)|(YYYY|YY|MM?M?M?|Do|DD?|ddd?d?|hh?|HH?|mm?|ss?|S{1,3}|a|A|x|X|ZZ?)/g;
 
@@ -13,28 +13,42 @@ const matchTimestamp = /[+-]?\d+(\.\d{1,3})?/; // 123456789 123456789.123
 
 const matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i; // Word
 
-const YEAR = 'year';
-const MONTH = 'month';
-const DAY = 'day';
-const HOUR = 'hours';
-const MINUTE = 'minutes';
-const SECOND = 'seconds';
-const MILLISECOND = 'milliseconds';
-const WEEK = 7;
-const WEEKDAY = 8;
+const YEAR = 0;
+const MONTH = 1;
+const DAY = 2;
+const HOUR = 3;
+const MINUTE = 4;
+const SECOND = 5;
+const MILLISECOND = 6;
+// const WEEK = 7;
+// const WEEKDAY = 8;
 
-const expressions = {};
+export type ParseFlagRegExp = RegExp | ((locale: Locale) => RegExp);
+export type ParseFlagCallBack = (
+  input: string,
+  locale: Locale
+) => [number, number] | [string, any];
 
-const addParseFlag = (token, regex, callback) => {
-  let func = callback;
+const parseFlags: {
+  [key: string]: [ParseFlagRegExp, ParseFlagCallBack];
+} = {};
+
+const addParseFlag = (
+  token: string | string[],
+  regex: ParseFlagRegExp,
+  callback: ParseFlagCallBack | number
+) => {
+  let func: ParseFlagCallBack;
   if (typeof callback === 'number') {
     func = input => {
       return [callback, parseInt(input, 10)];
     };
+  } else {
+    func = callback;
   }
   const tokens = Array.isArray(token) ? token : [token];
   tokens.forEach(key => {
-    expressions[key] = [regex, func];
+    parseFlags[key] = [regex, func];
   });
 };
 
@@ -75,28 +89,29 @@ addParseFlag('ss', match2, SECOND);
 addParseFlag('S', match1, input => {
   return [MILLISECOND, +input * 100];
 });
-addParseFlag('SS', match1, input => {
+addParseFlag('SS', match2, input => {
   return [MILLISECOND, +input * 10];
 });
-addParseFlag('SSS', match1, MILLISECOND);
+addParseFlag('SSS', match3, MILLISECOND);
 
-function matchMeridiem(locale) {
+function matchMeridiem(locale: Locale) {
   return locale.meridiemParse || /[ap]\.?m?\.?/i;
 }
-function defaultIsPM(input) {
+
+function defaultIsPM(input: string) {
   return (input + '').toLowerCase().charAt(0) === 'p';
 }
 
 addParseFlag(['A', 'a'], matchMeridiem, (input, locale) => {
-  const isPM = typeof locale.isPM === 'function' ? locale.isPM(input) : defaultIsPM;
+  const isPM = typeof locale.isPM === 'function' ? locale.isPM : defaultIsPM;
   return ['isPM', isPM(input)];
 });
 
-function offsetFromString(str) {
-  const [symbol, hour, minute] = str.match(/([+-]|\d\d)/g) || ['-', 0, 0];
+function offsetFromString(str: string) {
+  const [symbol, hour, minute] = str.match(/([+-]|\d\d)/g) || ['-', '0', '0'];
   const minutes = parseInt(hour, 10) * 60 + parseInt(minute, 10);
 
-  return minutes === 0 ? 0 : symbol === '+' ? minutes : -minutes;
+  return minutes === 0 ? 0 : symbol === '+' ? -minutes : +minutes;
 }
 
 addParseFlag(['Z', 'ZZ'], matchShortOffset, input => {
@@ -111,76 +126,117 @@ addParseFlag('X', matchTimestamp, input => {
   return ['date', new Date(parseFloat(input) * 1000)];
 });
 
-function parse(input, format, { locale, backupDate }) {
-  let string = String(input);
-  const tokens = format.match(formattingTokens);
-  const { length } = tokens;
-  let start = 0;
-  const mark: any = {};
-  for (let i = 0; i < length; i += 1) {
-    const token = tokens[i];
-    const parseTo = expressions[token];
-    if (!parseTo) {
-      start += token.replace(/^\[|\]$/g, '').length;
-    } else {
-      const part = string.substr(start);
-      const regex = typeof parseTo[0] === 'function' ? parseTo[0](locale) : parseTo[0];
-      const parser = parseTo[1];
-      const value = (regex.exec(part) || [])[0];
-      const [k, v] = parser(value);
-      mark[k] = v;
-      string = string.replace(value, '');
-    }
-  }
-  const { isPM } = mark;
-  if (isPM !== undefined) {
-    if (isPM) {
-      if (mark.hours < 12) {
-        mark.hours += 12;
-      }
-    } else if (mark.hours === 12) {
-      mark.hours = 0;
-    }
-  }
-  const defaultDate = isValidDate(backupDate) ? backupDate : new Date(new Date().getFullYear(), 0, 1);
-  // const utcDate =
+interface FlagMark {
+  date?: Date;
+  offset?: number;
+  isPM?: boolean;
 }
 
-function createUTCDate(y, m, ...args: number[]) {
-  let date;
+function to24hour(hour?: number, isPM?: boolean) {
+  if (hour !== undefined && isPM !== undefined) {
+    if (isPM) {
+      if (hour < 12) {
+        return hour + 12;
+      }
+    } else if (hour === 12) {
+      return 0;
+    }
+  }
+  return hour;
+}
+
+type DateArgs = [number, number, number, number, number, number, number];
+
+function getFullInputArray(
+  input: Array<number | undefined>,
+  backupDate = new Date()
+) {
+  const result: DateArgs = [0, 0, 1, 0, 0, 0, 0];
+  const backupArr = [
+    backupDate.getFullYear(),
+    backupDate.getMonth(),
+    backupDate.getDate(),
+    backupDate.getHours(),
+    backupDate.getMinutes(),
+    backupDate.getSeconds(),
+    backupDate.getMilliseconds(),
+  ];
+  let useBackup = true;
+  for (let i = 0; i < 7; i++) {
+    if (input[i] === undefined) {
+      result[i] = useBackup ? backupArr[i] : result[i];
+    } else {
+      result[i] = input[i]!;
+      useBackup = false;
+    }
+  }
+  return result;
+}
+
+function createUTCDate(...args: DateArgs) {
+  let date: Date;
+  const y = args[0];
   if (y < 100 && y >= 0) {
-    y += 400;
-    date = new Date(Date.UTC(y, m, ...args));
+    args[0] += 400;
+    date = new Date(Date.UTC(...args));
     if (isFinite(date.getUTCFullYear())) {
       date.setUTCFullYear(y);
     }
   } else {
-    date = new Date(Date.UTC(y, m, ...args));
+    date = new Date(Date.UTC(...args));
   }
 
   return date;
 }
 
-// const parseFormattedInput = (input, format, utc) => {
-//   try {
-//     const parser = makeParser(format);
-//     const { year, month, day, hours, minutes, seconds, milliseconds, zone } = parser(input);
-//     if (zone) {
-//       return new Date(Date.UTC(year, month - 1, day, hours || 0, minutes || 0, seconds || 0, milliseconds || 0) + zone.offset * 60 * 1000);
-//     }
-//     const now = new Date();
-//     const y = year || now.getFullYear();
-//     const M = month > 0 ? month - 1 : now.getMonth();
-//     const d = day || now.getDate();
-//     const h = hours || 0;
-//     const m = minutes || 0;
-//     const s = seconds || 0;
-//     const ms = milliseconds || 0;
-//     if (utc) {
-//       return new Date(Date.UTC(y, M, d, h, m, s, ms));
-//     }
-//     return new Date(y, M, d, h, m, s, ms);
-//   } catch (e) {
-//     return new Date(''); // Invalid Date
-//   }
-// };
+function makeParser(dateString: string, format: string, locale: Locale) {
+  const tokens = format.match(formattingTokens);
+  if (!tokens) {
+    throw new Error();
+  }
+  const { length } = tokens;
+  const mark: FlagMark = {};
+  const inputArray: (number | undefined)[] = [];
+  for (let i = 0; i < length; i += 1) {
+    const token = tokens[i];
+    const parseTo = parseFlags[token];
+    if (!parseTo) {
+      const word = token.replace(/^\[|\]$/g, '');
+      if (dateString.indexOf(word) === 0) {
+        dateString = dateString.substr(word.length);
+      } else {
+        throw new Error('not match');
+      }
+    } else {
+      const regex =
+        typeof parseTo[0] === 'function' ? parseTo[0](locale) : parseTo[0];
+      const parser = parseTo[1];
+      const value = (regex.exec(dateString) || [])[0];
+      const [k, v] = parser(value, locale);
+      if (typeof k === 'number') {
+        inputArray[k] = v;
+      } else {
+        mark[k] = v;
+      }
+      dateString = dateString.replace(value, '');
+    }
+  }
+  return { ...mark, inputArray };
+}
+
+export default function parse(str: string, format: string, options: any = {}) {
+  try {
+    const { locale = defaultLocale, backupDate } = options;
+    const { isPM, date, offset, inputArray } = makeParser(str, format, locale);
+    if (date) {
+      return date;
+    }
+    inputArray[HOUR] = to24hour(inputArray[HOUR], isPM);
+    const utcDate = createUTCDate(...getFullInputArray(inputArray, backupDate));
+    const offsetMilliseconds =
+      (offset === undefined ? utcDate.getTimezoneOffset() : offset) * 60 * 1000;
+    return new Date(utcDate.getTime() + offsetMilliseconds);
+  } catch (e) {
+    return new Date(NaN);
+  }
+}
