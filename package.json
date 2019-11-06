@@ -18,6 +18,7 @@
     "@types/jest": "^24.0.22",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
-    "typescript": "^3.6.4"
+    "typescript": "^3.6.4",
+    "utility-types": "^3.9.0"
   }
 }

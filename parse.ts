@@ -1,6 +1,7 @@
+import { Unionize, PickByValue } from 'utility-types';
 import { Locale, defaultLocale } from './locale';
 
-const formattingTokens = /(\[[^[]*\])|([-:/.()\s]+)|(YYYY|YY|MM?M?M?|Do|DD?|ddd?d?|hh?|HH?|mm?|ss?|S{1,3}|a|A|x|X|ZZ?)/g;
+const formattingTokens = /(\[[^\[]*\])|(MM?M?M?|Do|DD?|ddd?d?|w[o|w]?|W[o|W]?|YYYY|YY|a|A|hh?|HH?|mm?|ss?|S{1,3}|x|X|ZZ?|.)/g;
 
 const match1 = /\d/; // 0 - 9
 const match2 = /\d\d/; // 00 - 99
@@ -13,21 +14,32 @@ const matchTimestamp = /[+-]?\d+(\.\d{1,3})?/; // 123456789 123456789.123
 
 const matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i; // Word
 
-const YEAR = 0;
-const MONTH = 1;
-const DAY = 2;
-const HOUR = 3;
-const MINUTE = 4;
-const SECOND = 5;
-const MILLISECOND = 6;
-// const WEEK = 7;
-// const WEEKDAY = 8;
+const YEAR = 'year';
+const MONTH = 'month';
+const DAY = 'day';
+const HOUR = 'hour';
+const MINUTE = 'minute';
+const SECOND = 'second';
+const MILLISECOND = 'millisecond';
+
+export interface FlagMark {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+  millisecond: number;
+  offset: number;
+  weekday: number;
+  date: Date;
+  isPM: boolean;
+}
+
+export type ParseFlagCallBackReturn = Unionize<FlagMark>;
 
 export type ParseFlagRegExp = RegExp | ((locale: Locale) => RegExp);
-export type ParseFlagCallBack = (
-  input: string,
-  locale: Locale
-) => [number, number] | [string, any];
+export type ParseFlagCallBack = (input: string, locale: Locale) => ParseFlagCallBackReturn;
 
 const parseFlags: {
   [key: string]: [ParseFlagRegExp, ParseFlagCallBack];
@@ -36,48 +48,49 @@ const parseFlags: {
 const addParseFlag = (
   token: string | string[],
   regex: ParseFlagRegExp,
-  callback: ParseFlagCallBack | number
+  callback: ParseFlagCallBack | keyof PickByValue<FlagMark, number>
 ) => {
+  const tokens = Array.isArray(token) ? token : [token];
   let func: ParseFlagCallBack;
-  if (typeof callback === 'number') {
+  if (typeof callback === 'string') {
     func = input => {
-      return [callback, parseInt(input, 10)];
+      const value = parseInt(input, 10);
+      return { [callback]: value } as Unionize<PickByValue<FlagMark, number>>;
     };
   } else {
     func = callback;
   }
-  const tokens = Array.isArray(token) ? token : [token];
   tokens.forEach(key => {
     parseFlags[key] = [regex, func];
   });
 };
 
-addParseFlag('YY', match2, input => {
+const matchWordCallback = (localeKey: string, key: 'month' | 'weekday') => {
+  return (input: string, locale: Locale) => {
+    const array = locale[localeKey];
+    if (!Array.isArray(array)) {
+      throw new Error(`Locale[${localeKey}] need an array`);
+    }
+    const index = array.findIndex((v: string) => String(v) === String(input));
+    if (index < 0) {
+      throw new Error('Invalid Word');
+    }
+    return { [key]: index } as Unionize<Pick<FlagMark, 'month' | 'weekday'>>;
+  };
+};
+
+addParseFlag('YY', match2, function(input) {
   const year = new Date().getFullYear();
   const cent = Math.floor(year / 100);
   let value = parseInt(input, 10);
   value = (value > 68 ? cent - 1 : cent) * 100 + value;
-  return [YEAR, value];
+  return { [YEAR]: value };
 });
 addParseFlag('YYYY', match4, YEAR);
-addParseFlag('M', match1to2, input => [MONTH, parseInt(input, 10) - 1]);
-addParseFlag('MM', match2, input => [MONTH, parseInt(input, 10) - 1]);
-addParseFlag('MMM', matchWord, (input, locale) => {
-  const { monthsShort } = locale;
-  const index = monthsShort.findIndex(month => month === input);
-  if (index < 0) {
-    throw new Error('Invalid Month');
-  }
-  return [MONTH, index];
-});
-addParseFlag('MMMM', matchWord, (input, locale) => {
-  const { months } = locale;
-  const index = months.findIndex(month => month === input);
-  if (index < 0) {
-    throw new Error('Invalid Month');
-  }
-  return [MONTH, index];
-});
+addParseFlag('M', match1to2, input => ({ [MONTH]: parseInt(input, 10) - 1 }));
+addParseFlag('MM', match2, input => ({ [MONTH]: parseInt(input, 10) - 1 }));
+addParseFlag('MMM', matchWord, matchWordCallback('monthsShort', MONTH));
+addParseFlag('MMMM', matchWord, matchWordCallback('months', MONTH));
 addParseFlag('D', match1to2, DAY);
 addParseFlag('DD', match2, DAY);
 addParseFlag(['H', 'h'], match1to2, HOUR);
@@ -87,10 +100,14 @@ addParseFlag('mm', match2, MINUTE);
 addParseFlag('s', match1to2, SECOND);
 addParseFlag('ss', match2, SECOND);
 addParseFlag('S', match1, input => {
-  return [MILLISECOND, +input * 100];
+  return {
+    [MILLISECOND]: parseInt(input, 10) * 100,
+  };
 });
 addParseFlag('SS', match2, input => {
-  return [MILLISECOND, +input * 10];
+  return {
+    [MILLISECOND]: parseInt(input, 10) * 10,
+  };
 });
 addParseFlag('SSS', match3, MILLISECOND);
 
@@ -103,8 +120,8 @@ function defaultIsPM(input: string) {
 }
 
 addParseFlag(['A', 'a'], matchMeridiem, (input, locale) => {
-  const isPM = typeof locale.isPM === 'function' ? locale.isPM : defaultIsPM;
-  return ['isPM', isPM(input)];
+  const isPM = typeof locale.isPM === 'function' ? locale.isPM(input) : defaultIsPM(input);
+  return { isPM };
 });
 
 function offsetFromString(str: string) {
@@ -115,22 +132,21 @@ function offsetFromString(str: string) {
 }
 
 addParseFlag(['Z', 'ZZ'], matchShortOffset, input => {
-  return ['offset', offsetFromString(input)];
+  return { offset: offsetFromString(input) };
 });
 
 addParseFlag('x', matchSigned, input => {
-  return ['date', new Date(parseInt(input, 10))];
+  return { date: new Date(parseInt(input, 10)) };
 });
 
 addParseFlag('X', matchTimestamp, input => {
-  return ['date', new Date(parseFloat(input) * 1000)];
+  return { date: new Date(parseFloat(input) * 1000) };
 });
 
-interface FlagMark {
-  date?: Date;
-  offset?: number;
-  isPM?: boolean;
-}
+addParseFlag('d', match1, 'weekday');
+addParseFlag('dd', matchWord, matchWordCallback('weekdaysMin', 'weekday'));
+addParseFlag('ddd', matchWord, matchWordCallback('weekdaysShort', 'weekday'));
+addParseFlag('dddd', matchWord, matchWordCallback('weekdays', 'weekday'));
 
 function to24hour(hour?: number, isPM?: boolean) {
   if (hour !== undefined && isPM !== undefined) {
@@ -147,10 +163,7 @@ function to24hour(hour?: number, isPM?: boolean) {
 
 type DateArgs = [number, number, number, number, number, number, number];
 
-function getFullInputArray(
-  input: Array<number | undefined>,
-  backupDate = new Date()
-) {
+function getFullInputArray(input: Array<number | undefined>, backupDate = new Date()) {
   const result: DateArgs = [0, 0, 1, 0, 0, 0, 0];
   const backupArr = [
     backupDate.getFullYear(),
@@ -195,8 +208,7 @@ function makeParser(dateString: string, format: string, locale: Locale) {
     throw new Error();
   }
   const { length } = tokens;
-  const mark: FlagMark = {};
-  const inputArray: (number | undefined)[] = [];
+  const mark: Partial<FlagMark> = {};
   for (let i = 0; i < length; i += 1) {
     const token = tokens[i];
     const parseTo = parseFlags[token];
@@ -208,34 +220,47 @@ function makeParser(dateString: string, format: string, locale: Locale) {
         throw new Error('not match');
       }
     } else {
-      const regex =
-        typeof parseTo[0] === 'function' ? parseTo[0](locale) : parseTo[0];
+      const regex = typeof parseTo[0] === 'function' ? parseTo[0](locale) : parseTo[0];
       const parser = parseTo[1];
       const value = (regex.exec(dateString) || [])[0];
-      const [k, v] = parser(value, locale);
-      if (typeof k === 'number') {
-        inputArray[k] = v;
-      } else {
-        mark[k] = v;
-      }
+      const obj = parser(value, locale);
+      Object.assign(mark, obj);
       dateString = dateString.replace(value, '');
     }
   }
-  return { ...mark, inputArray };
+  return mark;
 }
 
 export default function parse(str: string, format: string, options: any = {}) {
   try {
     const { locale = defaultLocale, backupDate } = options;
-    const { isPM, date, offset, inputArray } = makeParser(str, format, locale);
+    const parseResult = makeParser(str, format, locale);
+    const {
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      second,
+      millisecond,
+      isPM,
+      date,
+      offset,
+      weekday,
+    } = parseResult;
     if (date) {
       return date;
     }
-    inputArray[HOUR] = to24hour(inputArray[HOUR], isPM);
+    const inputArray = [year, month, day, hour, minute, second, millisecond];
+    inputArray[3] = to24hour(inputArray[3], isPM);
     const utcDate = createUTCDate(...getFullInputArray(inputArray, backupDate));
     const offsetMilliseconds =
       (offset === undefined ? utcDate.getTimezoneOffset() : offset) * 60 * 1000;
-    return new Date(utcDate.getTime() + offsetMilliseconds);
+    const parsedDate = new Date(utcDate.getTime() + offsetMilliseconds);
+    if (weekday !== undefined && parsedDate.getDay() !== weekday) {
+      return new Date(NaN);
+    }
+    return parsedDate;
   } catch (e) {
     return new Date(NaN);
   }

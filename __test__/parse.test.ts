@@ -91,6 +91,43 @@ it('parse HH:mm:ss', () => {
   expect(parse(input, format).valueOf()).toBe(moment(input, format).valueOf());
 });
 
+it('correct weekday', () => {
+  const expected = new Date(2019, 9, 1);
+  expect(parse('2 2019-10-1', 'd YYYY-MM-D')).toEqual(expected);
+  expect(parse('Tu 2019-10-1', 'dd YYYY-MM-D')).toEqual(expected);
+  expect(parse('Tue 2019-10-1', 'ddd YYYY-MM-D')).toEqual(expected);
+  expect(parse('Tuesday 2019-10-1', 'dddd YYYY-MM-D')).toEqual(expected);
+});
+
+it('incorrect weekday', () => {
+  const expected = new Date(NaN).valueOf();
+  expect(parse('3 2019-10-1', 'd YYYY-MM-D').valueOf()).toEqual(expected);
+  expect(parse('ww 2019-10-1', 'dd YYYY-MM-D').valueOf()).toEqual(expected);
+  expect(parse('Mo 2019-10-1', 'dd YYYY-MM-D').valueOf()).toEqual(expected);
+
+  expect(parse('www 2019-10-1', 'ddd YYYY-MM-D').valueOf()).toEqual(expected);
+  expect(parse('Mon 2019-10-1', 'ddd YYYY-MM-D').valueOf()).toEqual(expected);
+
+  expect(parse('www 2019-10-1', 'dddd YYYY-MM-D').valueOf()).toEqual(expected);
+  expect(parse('Monday 2019-10-1', 'dddd YYYY-MM-D').valueOf()).toEqual(expected);
+});
+
+it('backupDate', () => {
+  const input = '12:00';
+  const format = 'HH:mm';
+  const backupDate = new Date(2010, 3, 3, 5, 5, 5, 5);
+  const expected = new Date(2010, 3, 3, 12, 0, 0, 0);
+  expect(parse(input, format, { backupDate })).toEqual(expected);
+});
+
+it('backupDate when year is parsed', () => {
+  const input = '2019 12:00';
+  const format = 'YYYY HH:mm';
+  const backupDate = new Date(2010, 3, 3, 5, 5, 5, 5);
+  const expected = new Date(2019, 0, 1, 12, 0, 0, 0);
+  expect(parse(input, format, { backupDate })).toEqual(expected);
+});
+
 it('return Invalid Date when parse corrupt short string', () => {
   const input = '2018 Dog 03';
   const format = 'YYYY MMM DD';
@@ -103,35 +140,14 @@ it('Invalid Dates', () => {
   expect(parse('2014/10/12', 'YYYY-MM-DD').valueOf()).toEqual(NaN);
 });
 
-// it('fails with an invalid format', () => {
-//   const input = '2018-05-02 12:00 PM';
-//   const format = 'C';
-//   expect(
-//     parse(input, format)
-//       .format()
-//       .toLowerCase()
-//   ).toBe(
-//     moment(input, format)
-//       .format()
-//       .toLowerCase()
-//   );
-// });
-
-// it('correctly parse month from string after changing locale globally', () => {
-//   const input = '2018 лютий 03';
-//   const format = 'YYYY MMMM DD';
-
-//   const parseLocale = parse().$locale();
-//   const momentLocale = moment.locale();
-//   try {
-//     parse.locale(uk);
-//     moment.locale('uk');
-//     expect(parse(input, format).valueOf()).toBe(moment(input, format).valueOf());
-//   } finally {
-//     parse.locale(parseLocale);
-//     moment.locale(momentLocale);
-//   }
-// });
+it('correctly parse string after changing locale globally', () => {
+  const locale = {
+    months: ['一月', '二月'],
+    monthsShort: ['一', '二'],
+  };
+  expect(parse('2018年 二月 9号', 'YYYY年 MMMM D号', { locale })).toEqual(new Date(2018, 1, 9));
+  expect(parse('2018 一 09', 'YYYY MMM DD', { locale })).toEqual(new Date(2018, 0, 9));
+});
 
 // it('correctly parse ordinal', () => {
 //   const input = '7th March 2019';
