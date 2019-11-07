@@ -4,6 +4,8 @@ export interface Locale {
   weekdays: string[];
   weekdaysShort: string[];
   weekdaysMin: string[];
+  firstDayOfWeek?: number;
+  firstWeekContainsDate?: number;
   ordinal?: () => string;
   meridiemParse?: RegExp;
   meridiem?: (hours: number, minutes: number, isLowercase: boolean) => string;
@@ -29,4 +31,6 @@ export const defaultLocale: Locale = {
   weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   weekdaysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+  firstDayOfWeek: 0,
+  firstWeekContainsDate: 1,
 };

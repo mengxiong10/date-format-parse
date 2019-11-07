@@ -90,6 +90,17 @@ it('format timestamp', () => {
   });
 });
 
+it('format week', () => {
+  const arr = ['w', 'ww'];
+  const dates = [new Date(2019, 0, 6), new Date(2019, 0, 1), new Date(2018, 11, 29)];
+  arr.forEach(fmt => {
+    dates.forEach(date => {
+      const dateString = format(date, fmt);
+      expect(dateString).toBe(moment(date).format(fmt));
+    });
+  });
+});
+
 it('format escape', () => {
   const date = new Date(2019, 10, 6, 10, 6, 5);
   const fmt = 'YYYY-MM-DD [at MM] HH:mm:ss';

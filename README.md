@@ -142,5 +142,7 @@ const locale = {
 |                            | SSS   | 000 001 ... 998 999                    |
 | Time Zone                  | Z     | -07:00 -06:00 ... +06:00 +07:00        |
 |                            | ZZ    | -0700 -0600 ... +0600 +0700            |
+| Week of Year               | w     | 1 2 ... 52 53                          |
+|                            | ww    | 01 02 ... 52 53                        |
 | Unix Timestamp             | X     | 1360013296                             |
 | Unix Millisecond Timestamp | x     | 1360013296123                          |

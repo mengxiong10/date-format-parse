@@ -1,7 +1,7 @@
-import { toDate, isValidDate } from './util';
+import { toDate, isValidDate, getWeek } from './util';
 import { defaultLocale, Locale } from './locale';
 
-const REGEX_FORMAT = /\[([^\]]+)]|YY(?:YY)?|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|m{1,2}|s{1,2}|Z{1,2}|S{1,3}|x|X|a|A/g;
+const REGEX_FORMAT = /\[([^\]]+)]|YY(?:YY)?|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|m{1,2}|s{1,2}|Z{1,2}|S{1,3}|w{1,2}|x|X|a|A/g;
 
 function pad(val: number, len = 2) {
   let output: string = Math.abs(val).toString();
@@ -179,6 +179,17 @@ const formatFlags: FormatFlag = {
   // Milliseconds timestamp: 512969520900
   x(date) {
     return date.getTime();
+  },
+
+  w(date, locale) {
+    return getWeek(date, {
+      firstDayOfWeek: locale.firstDayOfWeek,
+      firstWeekContainsDate: locale.firstWeekContainsDate,
+    });
+  },
+
+  ww(date, locale) {
+    return pad(formatFlags.w(date, locale) as number, 2);
   },
 };
 

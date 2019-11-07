@@ -1,10 +1,34 @@
 import moment from 'moment';
 import parse from '../src/parse';
 
+it('parse week ww', () => {
+  const inputs = ['2019-01', '2019-22', '2019-52'];
+  inputs.forEach(input => {
+    const fmt = 'YYYY-ww';
+    expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
+  });
+});
+
+it('parse week ww without year', () => {
+  const inputs = ['01', '22', '52'];
+  inputs.forEach(input => {
+    const fmt = 'ww';
+    expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
+  });
+});
+
+it('parse week w', () => {
+  const inputs = ['2019-1', '2019-22', '2019-52'];
+  inputs.forEach(input => {
+    const fmt = 'YYYY-w';
+    expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
+  });
+});
+
 it('timezone with zero', () => {
   const input = '2018-05-02 +0000';
-  const format = 'YYYY-MM-DD ZZ';
-  expect(parse(input, format).valueOf()).toBe(moment(input, format).valueOf());
+  const fmt = 'YYYY-MM-DD ZZ';
+  expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
 });
 
 it('incorrect weekday', () => {
@@ -22,24 +46,24 @@ it('incorrect weekday', () => {
 
 it('backupDate', () => {
   const input = '12:00';
-  const format = 'HH:mm';
+  const fmt = 'HH:mm';
   const backupDate = new Date(2010, 3, 3, 5, 5, 5, 5);
   const expected = new Date(2010, 3, 3, 12, 0, 0, 0);
-  expect(parse(input, format, { backupDate })).toEqual(expected);
+  expect(parse(input, fmt, { backupDate })).toEqual(expected);
 });
 
 it('backupDate when year is parsed', () => {
   const input = '2019 12:00';
-  const format = 'YYYY HH:mm';
+  const fmt = 'YYYY HH:mm';
   const backupDate = new Date(2010, 3, 3, 5, 5, 5, 5);
   const expected = new Date(2019, 0, 1, 12, 0, 0, 0);
-  expect(parse(input, format, { backupDate })).toEqual(expected);
+  expect(parse(input, fmt, { backupDate })).toEqual(expected);
 });
 
 it('return Invalid Date when parse corrupt short string', () => {
   const input = '2018 Dog 03';
-  const format = 'YYYY MMM DD';
-  expect(parse(input, format).valueOf()).toEqual(NaN);
+  const fmt = 'YYYY MMM DD';
+  expect(parse(input, fmt).valueOf()).toEqual(NaN);
 });
 
 it('Invalid Dates', () => {
@@ -63,9 +87,9 @@ it('correctly parse string after changing locale globally', () => {
 //   const input2 = '17th March 2019';
 //   const inputFalse = '7st March 2019';
 //   const inputZHCN = '7日 三月 2019';
-//   const format = 'Do MMMM YYYY';
-//   expect(parse(input, format).valueOf()).toBe(moment(input, format).valueOf());
-//   expect(parse(input2, format).valueOf()).toBe(moment(input2, format).valueOf());
-//   expect(parse(inputFalse, format).valueOf()).toBe(moment(inputFalse, format).valueOf());
-//   expect(parse(inputZHCN, format, 'zh-cn').valueOf()).toBe(moment(inputZHCN, format, 'zh-cn').valueOf());
+//   const fmt = 'Do MMMM YYYY';
+//   expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
+//   expect(parse(input2, fmt).valueOf()).toBe(moment(input2, fmt).valueOf());
+//   expect(parse(inputFalse, fmt).valueOf()).toBe(moment(inputFalse, fmt).valueOf());
+//   expect(parse(inputZHCN, fmt, 'zh-cn').valueOf()).toBe(moment(inputZHCN, fmt, 'zh-cn').valueOf());
 // });

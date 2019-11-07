@@ -1,7 +1,8 @@
 import { Unionize, PickByValue } from 'utility-types';
 import { Locale, defaultLocale } from './locale';
+import { startOfWeekYear } from './util';
 
-const formattingTokens = /(\[[^\[]*\])|(MM?M?M?|Do|DD?|ddd?d?|w[o|w]?|W[o|W]?|YYYY|YY|a|A|hh?|HH?|mm?|ss?|S{1,3}|x|X|ZZ?|.)/g;
+const formattingTokens = /(\[[^\[]*\])|(MM?M?M?|Do|DD?|ddd?d?|w[o|w]?|YYYY|YY|a|A|hh?|HH?|mm?|ss?|S{1,3}|x|X|ZZ?|.)/g;
 
 const match1 = /\d/; // 0 - 9
 const match2 = /\d\d/; // 00 - 99
@@ -31,7 +32,8 @@ export interface ParseFlagMark {
   second: number;
   millisecond: number;
   offset: number;
-  weekday: number;
+  weekday: number; // 0,1...6
+  week: number; //  0 1... 52
   date: Date;
   isPM: boolean;
 }
@@ -152,6 +154,9 @@ addParseFlag('dd', matchWord, matchWordCallback('weekdaysMin', 'weekday'));
 addParseFlag('ddd', matchWord, matchWordCallback('weekdaysShort', 'weekday'));
 addParseFlag('dddd', matchWord, matchWordCallback('weekdays', 'weekday'));
 
+addParseFlag('w', match1to2, 'week');
+addParseFlag('ww', match2, 'week');
+
 function to24hour(hour?: number, isPM?: boolean) {
   if (hour !== undefined && isPM !== undefined) {
     if (isPM) {
@@ -238,7 +243,7 @@ function makeParser(dateString: string, format: string, locale: Locale) {
 
 export default function parse(str: string, format: string, options: any = {}) {
   try {
-    const { locale = defaultLocale, backupDate } = options;
+    const { locale = defaultLocale, backupDate = new Date() } = options;
     const parseResult = makeParser(str, format, locale);
     const {
       year,
@@ -252,16 +257,28 @@ export default function parse(str: string, format: string, options: any = {}) {
       date,
       offset,
       weekday,
+      week,
     } = parseResult;
     if (date) {
       return date;
     }
     const inputArray = [year, month, day, hour, minute, second, millisecond];
     inputArray[3] = to24hour(inputArray[3], isPM);
+    // check week
+    if (week !== undefined && month === undefined && day === undefined) {
+      // new Date(year, 3) make sure in current year
+      const firstDate = startOfWeekYear(year === undefined ? backupDate : new Date(year, 3), {
+        firstDayOfWeek: locale.firstDayOfWeek,
+        firstWeekContainsDate: locale.firstWeekContainsDate,
+      });
+      return new Date(firstDate.getTime() + (week - 1) * 7 * 24 * 3600 * 1000);
+    }
+
     const utcDate = createUTCDate(...getFullInputArray(inputArray, backupDate));
     const offsetMilliseconds =
       (offset === undefined ? utcDate.getTimezoneOffset() : offset) * 60 * 1000;
     const parsedDate = new Date(utcDate.getTime() + offsetMilliseconds);
+    // check weekday
     if (weekday !== undefined && parsedDate.getDay() !== weekday) {
       return new Date(NaN);
     }
