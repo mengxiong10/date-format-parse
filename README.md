@@ -10,7 +10,9 @@ npm install date-format-parse --save
 
 ## Usage
 
-#### Format
+### Format
+
+Format Date to String.
 
 ```js
 import { format } from 'date-format-parse';
@@ -24,7 +26,9 @@ format(new Date(), 'YYYY-MM-DD', { locale: obj })
 
 ```
 
-#### Parse
+### Parse
+
+Parse String to Date
 
 ```js
 import { parse } from 'date-format-parse';
@@ -41,7 +45,7 @@ parse('2019-12-10 14:11:12', 'YYYY-MM-DD HH:mm:ss', { locale: obj });
 
 ```
 
-#### Locale
+### Locale
 
 ```ts
 interface Locale {
@@ -57,6 +61,7 @@ interface Locale {
 }
 
 const locale = {
+  // MMMM
   months: [
     'January',
     'February',
@@ -71,25 +76,29 @@ const locale = {
     'November',
     'December',
   ],
+  // MMM
   monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  // dddd
   weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  // ddd
   weekdaysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  // dd
   weekdaysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-  // (Optional) format the ampm;
+  // [A a] format the ampm. The following is the default value
   meridiem: (h: number, m: number, isLowercase: boolean) => {
     const word = h < 12 ? 'AM' : 'PM';
     return isLowercase ? word.toLocaleLowerCase() : word;
   };
-  // (Optional) used by parse to match the ampm;
+  // [A a] used by parse to match the ampm. The following is the default value
   meridiemParse: /[ap]\.?m?\.?/i,
-  // (Optional) used by parse to determine if the matching string is pm;
+  // [A a] used by parse to determine if the matching string is pm. The following is the default value
   isPM: (input) => {
     return (input + '').toLowerCase().charAt(0) === 'p';
   }
 };
 ```
 
-### Tokens
+## Tokens
 
 | Uint                       | Token | output                                 |
 | -------------------------- | ----- | -------------------------------------- |
@@ -101,6 +110,10 @@ const locale = {
 |                            | MMMM  | January February ... November December |
 | Day of Month               | D     | 1 2 ... 30 31                          |
 |                            | DD    | 01 02 ... 30 31                        |
+| Day of Week                | d     | 0 1 ... 5 6                            |
+|                            | dd    | Su Mo ... Fr Sa                        |
+|                            | ddd   | Sun Mon ... Fri Sat                    |
+|                            | dddd  | Sunday Monday ... Friday Saturday      |
 | AM/PM                      | A     | AM PM                                  |
 |                            | a     | am pm                                  |
 | Hour                       | H     | 0 1 ... 22 23                          |
