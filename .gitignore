@@ -1,9 +1,9 @@
 .vscode
 .cache
 
-_site
-
+coverage
 node_modules
 dist
 lib
+esm
 es

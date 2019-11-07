@@ -1,4 +1,8 @@
+build
+config
+coverage
 dist
 lib
+esm
 es
 node_modules

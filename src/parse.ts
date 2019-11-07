@@ -22,7 +22,7 @@ const MINUTE = 'minute';
 const SECOND = 'second';
 const MILLISECOND = 'millisecond';
 
-export interface FlagMark {
+export interface ParseFlagMark {
   year: number;
   month: number;
   day: number;
@@ -36,26 +36,28 @@ export interface FlagMark {
   isPM: boolean;
 }
 
-export type ParseFlagCallBackReturn = Unionize<FlagMark>;
+export type ParseFlagCallBackReturn = Unionize<ParseFlagMark>;
 
 export type ParseFlagRegExp = RegExp | ((locale: Locale) => RegExp);
 export type ParseFlagCallBack = (input: string, locale: Locale) => ParseFlagCallBackReturn;
 
-const parseFlags: {
+export interface ParseFlag {
   [key: string]: [ParseFlagRegExp, ParseFlagCallBack];
-} = {};
+}
+
+const parseFlags: ParseFlag = {};
 
 const addParseFlag = (
   token: string | string[],
   regex: ParseFlagRegExp,
-  callback: ParseFlagCallBack | keyof PickByValue<FlagMark, number>
+  callback: ParseFlagCallBack | keyof PickByValue<ParseFlagMark, number>
 ) => {
   const tokens = Array.isArray(token) ? token : [token];
   let func: ParseFlagCallBack;
   if (typeof callback === 'string') {
     func = input => {
       const value = parseInt(input, 10);
-      return { [callback]: value } as Unionize<PickByValue<FlagMark, number>>;
+      return { [callback]: value } as Unionize<PickByValue<ParseFlagMark, number>>;
     };
   } else {
     func = callback;
@@ -71,15 +73,15 @@ const matchWordCallback = (localeKey: string, key: 'month' | 'weekday') => {
     if (!Array.isArray(array)) {
       throw new Error(`Locale[${localeKey}] need an array`);
     }
-    const index = array.findIndex((v: string) => String(v) === String(input));
+    const index = array.indexOf(input);
     if (index < 0) {
       throw new Error('Invalid Word');
     }
-    return { [key]: index } as Unionize<Pick<FlagMark, 'month' | 'weekday'>>;
+    return { [key]: index } as Unionize<Pick<ParseFlagMark, 'month' | 'weekday'>>;
   };
 };
 
-addParseFlag('YY', match2, function(input) {
+addParseFlag('YY', match2, input => {
   const year = new Date().getFullYear();
   const cent = Math.floor(year / 100);
   let value = parseInt(input, 10);
@@ -116,7 +118,7 @@ function matchMeridiem(locale: Locale) {
 }
 
 function defaultIsPM(input: string) {
-  return (input + '').toLowerCase().charAt(0) === 'p';
+  return `${input}`.toLowerCase().charAt(0) === 'p';
 }
 
 addParseFlag(['A', 'a'], matchMeridiem, (input, locale) => {
@@ -127,8 +129,10 @@ addParseFlag(['A', 'a'], matchMeridiem, (input, locale) => {
 function offsetFromString(str: string) {
   const [symbol, hour, minute] = str.match(/([+-]|\d\d)/g) || ['-', '0', '0'];
   const minutes = parseInt(hour, 10) * 60 + parseInt(minute, 10);
-
-  return minutes === 0 ? 0 : symbol === '+' ? -minutes : +minutes;
+  if (minutes === 0) {
+    return 0;
+  }
+  return symbol === '+' ? -minutes : +minutes;
 }
 
 addParseFlag(['Z', 'ZZ'], matchShortOffset, input => {
@@ -192,6 +196,7 @@ function createUTCDate(...args: DateArgs) {
   if (y < 100 && y >= 0) {
     args[0] += 400;
     date = new Date(Date.UTC(...args));
+    // eslint-disable-next-line no-restricted-globals
     if (isFinite(date.getUTCFullYear())) {
       date.setUTCFullYear(y);
     }
@@ -208,7 +213,7 @@ function makeParser(dateString: string, format: string, locale: Locale) {
     throw new Error();
   }
   const { length } = tokens;
-  const mark: Partial<FlagMark> = {};
+  let mark: Partial<ParseFlagMark> = {};
   for (let i = 0; i < length; i += 1) {
     const token = tokens[i];
     const parseTo = parseFlags[token];
@@ -224,7 +229,7 @@ function makeParser(dateString: string, format: string, locale: Locale) {
       const parser = parseTo[1];
       const value = (regex.exec(dateString) || [])[0];
       const obj = parser(value, locale);
-      Object.assign(mark, obj);
+      mark = { ...mark, ...obj };
       dateString = dateString.replace(value, '');
     }
   }
