@@ -13,6 +13,7 @@
     "tsc": "tsc -m esnext --outDir es && tsc -m commonjs --outDir lib",
     "build": "npm run lint && npm test && npm run clean && npm run tsc",
     "test": "jest",
+    "cov": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "clean": "rimraf es dist coverage",
     "lint": "eslint src/**/*",
     "format": "prettier --write src/**/*",
