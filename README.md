@@ -1,11 +1,24 @@
 # date-format-parse
 
+<a href="https://travis-ci.org/mengxiong10/date-format-parse">
+  <img src="https://travis-ci.org/mengxiong10/date-format-parse.svg?branch=master" alt="build:passed">
+</a>
+<a href="https://coveralls.io/github/mengxiong10/date-format-parse">
+  <img src="https://coveralls.io/repos/github/mengxiong10/date-format-parse/badge.svg?branch=master&service=github" alt="Badge">
+</a>
+<a href="https://www.npmjs.com/package/date-format-parse">
+  <img src="https://img.shields.io/npm/v/date-format-parse.svg" alt="npm">
+</a>
+<a href="LICENSE">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT">
+</a>
+
 Lightweight date format and parse. Meant to replace the primary functions of format and parse of momentjs.
 
 ## NPM
 
 ```bash
-npm install date-format-parse --save
+$ npm install date-format-parse --save
 ```
 
 ## Usage
