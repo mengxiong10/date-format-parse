@@ -1,6 +1,7 @@
 import moment from 'moment';
 import format from '../src/format';
 import parse from '../src/parse';
+import zhCN from '../src/locale/zh-cn';
 
 it('format full', () => {
   const date = new Date(2019, 5, 9, 6, 6, 9, 1);
@@ -107,6 +108,14 @@ it('format escape', () => {
   const dateString = format(date, fmt);
   expect(dateString).toBe(moment(date).format(fmt));
   expect(parse(dateString, fmt)).toEqual(date);
+});
+
+it('locale', () => {
+  const date = new Date(2019, 10, 2, 18, 5, 2);
+  const fmt = 'YYYY年 MMM DD日 hh:mm:ss a';
+  const dateString = format(date, fmt, { locale: zhCN });
+  expect(dateString).toBe('2019年 11月 02日 06:05:02 下午');
+  expect(parse(dateString, fmt, { locale: zhCN })).toEqual(date);
 });
 
 it('invalid date', () => {
