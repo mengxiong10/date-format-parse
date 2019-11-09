@@ -25,7 +25,7 @@ it('format year < 100', () => {
   const fmt = 'YYYY';
   const dateString = format(date, fmt);
   expect(dateString).toBe(moment(date).format(fmt));
-  expect(parse(dateString, fmt)).toEqual(date);
+  expect(parse(dateString, fmt).getFullYear()).toBe(date.getFullYear());
 });
 
 it('format 12h', () => {
