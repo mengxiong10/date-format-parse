@@ -1,3 +1,7 @@
+## [0.2.1](https://github.com/mengxiong10/date-format-parse/compare/v0.2.0...v0.2.1) (2019-11-09)
+
+
+
 # 0.2.0 (2019-11-09)
 
 ### Features
