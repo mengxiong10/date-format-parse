@@ -1,21 +1,16 @@
 {
   "compilerOptions": {
-    "outDir": "es",
     "module": "esnext",
-    "target": "es5",
+    "target": "esnext",
     "sourceMap": false,
-    "declaration": true,
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
+    "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "esModuleInterop": true,
     "importHelpers": true
   },
-  "include": ["src/**/*"]
+  "include": ["src"]
 }
