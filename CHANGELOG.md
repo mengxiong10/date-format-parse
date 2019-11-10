@@ -1,3 +1,12 @@
+## [0.2.2](https://github.com/mengxiong10/date-format-parse/compare/v0.2.1...v0.2.2) (2019-11-10)
+
+
+### Bug Fixes
+
+* fix the parse types ([35c8ba3](https://github.com/mengxiong10/date-format-parse/commit/35c8ba31fe4b7aed28828236d7adda21d42ffe61))
+
+
+
 ## [0.2.1](https://github.com/mengxiong10/date-format-parse/compare/v0.2.0...v0.2.1) (2019-11-09)
 
 
