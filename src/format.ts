@@ -1,5 +1,6 @@
 import { toDate, isValidDate, getWeek } from './util';
-import { defaultLocale, Locale } from './locale';
+import { Locale } from './locale';
+import defaultLocale from './locale/en';
 
 const REGEX_FORMAT = /\[([^\]]+)]|YY(?:YY)?|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|m{1,2}|s{1,2}|Z{1,2}|S{1,3}|w{1,2}|x|X|a|A/g;
 

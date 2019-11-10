@@ -1,4 +1,4 @@
-import { Locale } from './en';
+import { Locale } from '../locale';
 
 const locale: Locale = {
   months: ['Ionawr', 'Chwefror', 'Mawrth', 'Ebrill', 'Mai', 'Mehefin', 'Gorffennaf', 'Awst', 'Medi', 'Hydref', 'Tachwedd', 'Rhagfyr'],

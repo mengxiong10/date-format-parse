@@ -1,4 +1,4 @@
-import { Locale } from './en';
+import { Locale } from '../locale';
 
 const locale: Locale = {
   months: ['jaanuar', 'veebruar', 'märts', 'aprill', 'mai', 'juuni', 'juuli', 'august', 'september', 'oktoober', 'november', 'detsember'],

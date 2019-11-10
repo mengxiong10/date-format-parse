@@ -1,4 +1,4 @@
-import { Locale } from './en';
+import { Locale } from '../locale';
 
 const locale: Locale = {
   months: ['sausis', 'vasaris', 'kovas', 'balandis', 'gegužė', 'birželis', 'liepa', 'rugpjūtis', 'rugsėjis', 'spalis', 'lapkritis', 'gruodis'],

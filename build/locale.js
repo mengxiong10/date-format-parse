@@ -19,7 +19,7 @@ function generateLocales() {
       firstWeekContainsDate: lang._week.doy || 1,
     };
     const template = `
-import { Locale } from './en';
+import { Locale } from '../locale';
 
 const locale: Locale = ${JSON.stringify(result)}
 

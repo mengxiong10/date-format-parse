@@ -1,5 +1,7 @@
 import { Unionize, PickByValue } from 'utility-types';
-import { Locale, defaultLocale } from './locale';
+import { Locale } from './locale';
+import defaultLocale from './locale/en';
+
 import { startOfWeekYear } from './util';
 
 const formattingTokens = /(\[[^\[]*\])|(MM?M?M?|Do|DD?|ddd?d?|w[o|w]?|YYYY|YY|a|A|hh?|HH?|mm?|ss?|S{1,3}|x|X|ZZ?|.)/g;
