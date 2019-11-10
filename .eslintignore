@@ -6,3 +6,5 @@ lib
 esm
 es
 node_modules
+
+*.js

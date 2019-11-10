@@ -3,14 +3,17 @@
   "version": "0.2.1",
   "description": "Lightweight date format and parse",
   "main": "lib/index.js",
+  "module": "es/index.js",
   "files": [
     "lib",
+    "es",
     "src"
   ],
   "scripts": {
-    "build:compile": "babel src --out-dir lib --extensions .ts",
-    "build:types": "tsc --project tsconfig.types.json --outDir lib",
-    "build": "npm run lint && npm test && npm run clean && npm run build:compile && npm run build:types",
+    "build:compile.cjs": "MODULE_TYPE=cjs babel src --out-dir lib --extensions .ts",
+    "build:compile.es": "babel src --out-dir es --extensions .ts",
+    "build:types": "tsc --project tsconfig.types.json --outDir lib && tsc --project tsconfig.types.json --outDir es",
+    "build": "npm run lint && npm test && npm run clean && npm run build:compile.cjs && npm run build:compile.es && npm run build:types",
     "test": "jest",
     "cov": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "clean": "rimraf es lib coverage",
