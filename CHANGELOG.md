@@ -1,3 +1,12 @@
+## [0.2.3](https://github.com/mengxiong10/date-format-parse/compare/v0.2.2...v0.2.3) (2019-11-10)
+
+
+### Bug Fixes
+
+* es build locale type ([969cab4](https://github.com/mengxiong10/date-format-parse/commit/969cab4056bc1b1b2cc6d7ddf3c6ca3d08a63033))
+
+
+
 ## [0.2.2](https://github.com/mengxiong10/date-format-parse/compare/v0.2.1...v0.2.2) (2019-11-10)
 
 
