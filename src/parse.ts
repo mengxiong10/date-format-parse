@@ -241,7 +241,11 @@ function makeParser(dateString: string, format: string, locale: Locale) {
   return mark;
 }
 
-export default function parse(str: string, format: string, options: any = {}) {
+export default function parse(
+  str: string,
+  format: string,
+  options: { locale?: Locale; backupDate?: Date } = {}
+) {
   try {
     const { locale = defaultLocale, backupDate = new Date() } = options;
     const parseResult = makeParser(str, format, locale);
