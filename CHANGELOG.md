@@ -1,3 +1,12 @@
+## [0.2.4](https://github.com/mengxiong10/date-format-parse/compare/v0.2.3...v0.2.4) (2019-11-11)
+
+
+### Bug Fixes
+
+* negative year ([dad4e83](https://github.com/mengxiong10/date-format-parse/commit/dad4e833a885470e530f4d0165d0ed0de5b9d15e))
+
+
+
 ## [0.2.3](https://github.com/mengxiong10/date-format-parse/compare/v0.2.2...v0.2.3) (2019-11-10)
 
 
