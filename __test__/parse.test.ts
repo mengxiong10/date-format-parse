@@ -74,7 +74,7 @@ it('Invalid Dates', () => {
 });
 
 it('correctly parse string after changing locale globally', () => {
-  const locale = {
+  const locale: any = {
     months: ['一月', '二月'],
     monthsShort: ['一', '二'],
   };

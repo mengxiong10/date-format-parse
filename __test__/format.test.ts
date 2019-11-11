@@ -19,6 +19,15 @@ it('format short', () => {
   expect(parse(dateString, fmt)).toEqual(date);
 });
 
+it('format year < 0', () => {
+  const date = new Date();
+  date.setFullYear(-53, 0);
+  const fmt = 'Y';
+  const dateString = format(date, fmt);
+  expect(dateString).toBe(moment(date).format(fmt));
+  expect(parse(dateString, fmt).getFullYear()).toBe(date.getFullYear());
+});
+
 it('format year < 100', () => {
   const date = new Date(2019, 0);
   date.setFullYear(50);

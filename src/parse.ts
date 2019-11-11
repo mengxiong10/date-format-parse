@@ -85,6 +85,7 @@ const matchWordCallback = (localeKey: string, key: 'month' | 'weekday') => {
   };
 };
 
+addParseFlag('Y', matchSigned, YEAR);
 addParseFlag('YY', match2, input => {
   const year = new Date().getFullYear();
   const cent = Math.floor(year / 100);
