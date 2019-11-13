@@ -1,3 +1,12 @@
+## [0.2.5](https://github.com/mengxiong10/date-format-parse/compare/v0.2.4...v0.2.5) (2019-11-13)
+
+
+### Bug Fixes
+
+* startOfWeekYear timezone ([b5061d5](https://github.com/mengxiong10/date-format-parse/commit/b5061d5f835f11132b3892ae363688315cb0564d))
+
+
+
 ## [0.2.4](https://github.com/mengxiong10/date-format-parse/compare/v0.2.3...v0.2.4) (2019-11-11)
 
 
