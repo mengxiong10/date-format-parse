@@ -40,6 +40,7 @@ export function startOfWeekYear(
   let firstDateOfFirstWeek = new Date(0);
   for (let i = year + 1; i >= year - 1; i--) {
     firstDateOfFirstWeek.setFullYear(i, 0, firstWeekContainsDate);
+    firstDateOfFirstWeek.setHours(0, 0, 0, 0);
     firstDateOfFirstWeek = startOfWeek(firstDateOfFirstWeek, firstDayOfWeek);
     if (date.getTime() >= firstDateOfFirstWeek.getTime()) {
       break;
