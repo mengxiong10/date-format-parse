@@ -76,20 +76,8 @@ it('Invalid Dates', () => {
 it('correctly parse string after changing locale globally', () => {
   const locale: any = {
     months: ['一月', '二月'],
-    monthsShort: ['一', '二'],
+    monthsShort: ['一.', '二'],
   };
   expect(parse('2018年 二月 9号', 'YYYY年 MMMM D号', { locale })).toEqual(new Date(2018, 1, 9));
-  expect(parse('2018 一 09', 'YYYY MMM DD', { locale })).toEqual(new Date(2018, 0, 9));
+  expect(parse('2018 一. 09', 'YYYY MMM DD', { locale })).toEqual(new Date(2018, 0, 9));
 });
-
-// it('correctly parse ordinal', () => {
-//   const input = '7th March 2019';
-//   const input2 = '17th March 2019';
-//   const inputFalse = '7st March 2019';
-//   const inputZHCN = '7日 三月 2019';
-//   const fmt = 'Do MMMM YYYY';
-//   expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
-//   expect(parse(input2, fmt).valueOf()).toBe(moment(input2, fmt).valueOf());
-//   expect(parse(inputFalse, fmt).valueOf()).toBe(moment(inputFalse, fmt).valueOf());
-//   expect(parse(inputZHCN, fmt, 'zh-cn').valueOf()).toBe(moment(inputZHCN, fmt, 'zh-cn').valueOf());
-// });

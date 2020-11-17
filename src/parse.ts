@@ -15,7 +15,7 @@ const matchShortOffset = /[+-]\d\d:?\d\d/; // +00:00 -00:00 +0000 or -0000
 const matchSigned = /[+-]?\d+/; // -inf - inf
 const matchTimestamp = /[+-]?\d+(\.\d{1,3})?/; // 123456789 123456789.123
 
-const matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i; // Word
+// const matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i; // Word
 
 const YEAR = 'year';
 const MONTH = 'month';
@@ -71,6 +71,20 @@ const addParseFlag = (
   });
 };
 
+const escapeStringRegExp = (str: string) => {
+  return str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+};
+
+const matchWordRegExp = (localeKey: string) => {
+  return (locale: Locale) => {
+    const array = locale[localeKey];
+    if (!Array.isArray(array)) {
+      throw new Error(`Locale[${localeKey}] need an array`);
+    }
+    return new RegExp(array.map(escapeStringRegExp).join('|'));
+  };
+};
+
 const matchWordCallback = (localeKey: string, key: 'month' | 'weekday') => {
   return (input: string, locale: Locale) => {
     const array = locale[localeKey];
@@ -96,8 +110,8 @@ addParseFlag('YY', match2, input => {
 addParseFlag('YYYY', match4, YEAR);
 addParseFlag('M', match1to2, input => ({ [MONTH]: parseInt(input, 10) - 1 }));
 addParseFlag('MM', match2, input => ({ [MONTH]: parseInt(input, 10) - 1 }));
-addParseFlag('MMM', matchWord, matchWordCallback('monthsShort', MONTH));
-addParseFlag('MMMM', matchWord, matchWordCallback('months', MONTH));
+addParseFlag('MMM', matchWordRegExp('monthsShort'), matchWordCallback('monthsShort', MONTH));
+addParseFlag('MMMM', matchWordRegExp('months'), matchWordCallback('months', MONTH));
 addParseFlag('D', match1to2, DAY);
 addParseFlag('DD', match2, DAY);
 addParseFlag(['H', 'h'], match1to2, HOUR);
@@ -153,9 +167,13 @@ addParseFlag('X', matchTimestamp, input => {
 });
 
 addParseFlag('d', match1, 'weekday');
-addParseFlag('dd', matchWord, matchWordCallback('weekdaysMin', 'weekday'));
-addParseFlag('ddd', matchWord, matchWordCallback('weekdaysShort', 'weekday'));
-addParseFlag('dddd', matchWord, matchWordCallback('weekdays', 'weekday'));
+addParseFlag('dd', matchWordRegExp('weekdaysMin'), matchWordCallback('weekdaysMin', 'weekday'));
+addParseFlag(
+  'ddd',
+  matchWordRegExp('weekdaysShort'),
+  matchWordCallback('weekdaysShort', 'weekday')
+);
+addParseFlag('dddd', matchWordRegExp('weekdays'), matchWordCallback('weekdays', 'weekday'));
 
 addParseFlag('w', match1to2, 'week');
 addParseFlag('ww', match2, 'week');
