@@ -1,3 +1,12 @@
+## [0.2.6](https://github.com/mengxiong10/date-format-parse/compare/v0.2.5...v0.2.6) (2020-11-17)
+
+
+### Bug Fixes
+
+* the word that contain "." cann't be parsed ([91544a3](https://github.com/mengxiong10/date-format-parse/commit/91544a3f61f75e4e0b9e092a9e06d70725ffbbe4))
+
+
+
 ## [0.2.5](https://github.com/mengxiong10/date-format-parse/compare/v0.2.4...v0.2.5) (2019-11-13)
 
 
