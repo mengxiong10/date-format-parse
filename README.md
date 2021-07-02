@@ -56,6 +56,15 @@ const obj = { ... }
 
 parse('2019-12-10 14:11:12', 'YYYY-MM-DD HH:mm:ss', { locale: obj });
 
+// with lenient, default is true
+parse('2021-07-02 22:65:12', 'YYYY-MM-DD HH:mm:ss', { lenient: true }) // new Date(2021, 6, 2, 23, 5, 12)
+parse('2021-07-02 22:65:12', 'YYYY-MM-DD HH:mm:ss', { lenient: false }) // new Date(NaN)
+
+// with nonStrict, default is false
+parse('2014/10/12', 'YYYY-MM-DD', { nonStrict: true }) // new Date(2014,  9, 12, 0, 0, 0, 0)
+parse('20141012', 'YYYY-MM-DD', { nonStrict: true }) // new Date(2014,  9, 12, 0, 0, 0, 0)
+parse('20141012', 'YYYY-MM-DD', { nonStrict: false }) // new Date(NaN)
+
 ```
 
 ### Locale
@@ -115,7 +124,8 @@ const locale = {
 
 | Uint                       | Token | output                                 |
 | -------------------------- | ----- | -------------------------------------- |
-| Year                       | YY    | 70 71 ... 10 11                        |
+| Year                       | Y     | -50000 ... 50000                       |
+|                            | YY    | 70 71 ... 10 11                        |
 |                            | YYYY  | 1970 1971 ... 2010 2011                |
 | Month                      | M     | 1 2 ... 11 12                          |
 |                            | MM    | 01 02 ... 11 12                        |
