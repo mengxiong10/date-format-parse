@@ -233,7 +233,7 @@ function createUTCDate(...args: DateArgs) {
   return date;
 }
 
-function makeParser(dateString: string, format: string, locale: Locale) {
+function makeParser(dateString: string, format: string, locale: Locale, nonStrict: boolean) {
   const tokens = format.match(formattingTokens);
   if (!tokens) {
     throw new Error();
@@ -247,6 +247,8 @@ function makeParser(dateString: string, format: string, locale: Locale) {
       const word = token.replace(/^\[|\]$/g, '');
       if (dateString.indexOf(word) === 0) {
         dateString = dateString.substr(word.length);
+      } else if (nonStrict) {
+        dateString.replace(/^[^a-zA-Z0-9]*/g, '');
       } else {
         throw new Error('not match');
       }
@@ -265,11 +267,11 @@ function makeParser(dateString: string, format: string, locale: Locale) {
 export default function parse(
   str: string,
   format: string,
-  options: { locale?: Locale; backupDate?: Date; lenient?: boolean } = {}
+  options: { locale?: Locale; backupDate?: Date; lenient?: boolean; nonStrict?: boolean } = {}
 ) {
   try {
-    const { locale = defaultLocale, backupDate = new Date(), lenient = true } = options;
-    const parseResult = makeParser(str, format, locale);
+    const { locale = defaultLocale, backupDate = new Date(), lenient = true, nonStrict = false } = options;
+    const parseResult = makeParser(str, format, locale, nonStrict);
     const {
       year,
       month,

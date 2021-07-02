@@ -99,3 +99,12 @@ it('Test lenient Dates', () => {
   expect(parse('2021-07-02 22:65:12 +0000', 'YYYY-MM-DD HH:mm:ss ZZ')).toEqual(new Date(Date.UTC(2021, 6, 2, 23,  5, 12, 0)));
   expect(parse('2021-07-02 23:45:72 +0000', 'YYYY-MM-DD HH:mm:ss ZZ')).toEqual(new Date(Date.UTC(2021, 6, 2, 23, 46, 12, 0)));
 });
+
+it('Non-Strict-Mode', () => {
+  const nonStrict = true;
+
+  expect(parse('2014/10/12', 'YYYY-MM-DD', { nonStrict })).toEqual(new Date(2014,  9, 12, 0, 0, 0, 0));
+  expect(parse('2014:10 12', 'YYYY-MM-DD', { nonStrict })).toEqual(new Date(2014,  9, 12, 0, 0, 0, 0));
+  expect(parse('20141012', 'YYYY-MM-DD', { nonStrict })).toEqual(new Date(2014,  9, 12, 0, 0, 0, 0));
+  expect(parse('2014-10-12', 'YYYY-MM-DD', { nonStrict })).toEqual(new Date(2014,  9, 12, 0, 0, 0, 0));  
+});
