@@ -265,10 +265,10 @@ function makeParser(dateString: string, format: string, locale: Locale) {
 export default function parse(
   str: string,
   format: string,
-  options: { locale?: Locale; backupDate?: Date } = {}
+  options: { locale?: Locale; backupDate?: Date; lenient?: boolean } = {}
 ) {
   try {
-    const { locale = defaultLocale, backupDate = new Date() } = options;
+    const { locale = defaultLocale, backupDate = new Date(), lenient = true } = options;
     const parseResult = makeParser(str, format, locale);
     const {
       year,
@@ -307,6 +307,20 @@ export default function parse(
     if (weekday !== undefined && parsedDate.getDay() !== weekday) {
       return new Date(NaN);
     }
+
+    // check strict date when not lenient
+    if (!lenient && (
+      (year !== undefined && parsedDate.getFullYear() !== year) ||
+      (month !== undefined && parsedDate.getMonth() !== month) ||
+      (day !== undefined && parsedDate.getDate() !== day) ||
+      (hour !== undefined && parsedDate.getHours() !== hour) ||
+      (minute !== undefined && parsedDate.getMinutes() !== minute) ||
+      (second !== undefined && parsedDate.getSeconds() !== second) ||
+      (millisecond !== undefined && parsedDate.getMilliseconds() !== millisecond)
+    )) {
+      return new Date(NaN);
+    } 
+
     return parsedDate;
   } catch (e) {
     return new Date(NaN);

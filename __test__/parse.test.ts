@@ -81,3 +81,21 @@ it('correctly parse string after changing locale globally', () => {
   expect(parse('2018年 二月 9号', 'YYYY年 MMMM D号', { locale })).toEqual(new Date(2018, 1, 9));
   expect(parse('2018 一. 09', 'YYYY MMM DD', { locale })).toEqual(new Date(2018, 0, 9));
 });
+
+it('Invalid non-lenient Dates', () => {
+  const lenient = false;
+
+  expect(parse('2021-13-02 23:45:12', 'YYYY-MM-DD HH:mm:ss', { lenient }).valueOf()).toEqual(NaN);
+  expect(parse('2021-07-32 23:45:12', 'YYYY-MM-DD HH:mm:ss', { lenient }).valueOf()).toEqual(NaN);
+  expect(parse('2021-07-02 25:45:12', 'YYYY-MM-DD HH:mm:ss', { lenient }).valueOf()).toEqual(NaN);
+  expect(parse('2021-07-02 23:65:12', 'YYYY-MM-DD HH:mm:ss', { lenient }).valueOf()).toEqual(NaN);
+  expect(parse('2021-07-02 23:45:72', 'YYYY-MM-DD HH:mm:ss', { lenient }).valueOf()).toEqual(NaN);
+});
+
+it('Test lenient Dates', () => {
+  expect(parse('2021-13-02 23:45:12 +0000', 'YYYY-MM-DD HH:mm:ss ZZ')).toEqual(new Date(Date.UTC(2022, 0, 2, 23, 45, 12, 0)));
+  expect(parse('2021-07-32 23:45:12 +0000', 'YYYY-MM-DD HH:mm:ss ZZ')).toEqual(new Date(Date.UTC(2021, 7, 1, 23, 45, 12, 0)));
+  expect(parse('2021-07-02 25:45:12 +0000', 'YYYY-MM-DD HH:mm:ss ZZ')).toEqual(new Date(Date.UTC(2021, 6, 3,  1, 45, 12, 0)));
+  expect(parse('2021-07-02 22:65:12 +0000', 'YYYY-MM-DD HH:mm:ss ZZ')).toEqual(new Date(Date.UTC(2021, 6, 2, 23,  5, 12, 0)));
+  expect(parse('2021-07-02 23:45:72 +0000', 'YYYY-MM-DD HH:mm:ss ZZ')).toEqual(new Date(Date.UTC(2021, 6, 2, 23, 46, 12, 0)));
+});
