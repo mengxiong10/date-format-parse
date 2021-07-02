@@ -4,7 +4,7 @@ import defaultLocale from './locale/en';
 
 import { startOfWeekYear } from './util';
 
-const formattingTokens = /(\[[^\[]*\])|(MM?M?M?|DD?|ddd?d?|ww?|YYYY|YY|a|A|hh?|HH?|mm?|ss?|S{1,3}|x|X|ZZ?|.)/g;
+const formattingTokens = /(\[[^\[]*\])|(YYYY|Y{1,2}|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|m{1,2}|s{1,2}|Z{1,2}|S{1,3}|w{1,2}|x|X|a|A|.)/g;
 
 const match1 = /\d/; // 0 - 9
 const match2 = /\d\d/; // 00 - 99
