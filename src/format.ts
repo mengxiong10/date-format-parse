@@ -13,6 +13,10 @@ function pad(val: number, len = 2) {
   return sign + output;
 }
 
+function getOffset(date: Date) {
+  return Math.round(date.getTimezoneOffset() / 15) * 15;
+}
+
 function formatTimezone(offset: number, delimeter = '') {
   const sign = offset > 0 ? '-' : '+';
   const absOffset = Math.abs(offset);
@@ -170,12 +174,12 @@ const formatFlags: FormatFlag = {
 
   // Timezone: -01:00, +00:00, ... +12:00
   Z(date) {
-    return formatTimezone(date.getTimezoneOffset(), ':');
+    return formatTimezone(getOffset(date), ':');
   },
 
   // Timezone: -0100, +0000, ... +1200
   ZZ(date) {
-    return formatTimezone(date.getTimezoneOffset());
+    return formatTimezone(getOffset(date));
   },
 
   // Seconds timestamp: 512969520
@@ -200,7 +204,7 @@ const formatFlags: FormatFlag = {
   },
 };
 
-function format(val: Date, str: string, options: { locale?: Locale } = {}) {
+export function format(val: Date, str: string, options: { locale?: Locale } = {}) {
   const formatStr = str ? String(str) : 'YYYY-MM-DDTHH:mm:ss.SSSZ';
   const date = toDate(val);
   if (!isValidDate(date)) {
@@ -219,5 +223,3 @@ function format(val: Date, str: string, options: { locale?: Locale } = {}) {
     return match;
   });
 }
-
-export default format;

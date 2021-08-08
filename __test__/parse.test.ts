@@ -1,5 +1,5 @@
 import moment from 'moment';
-import parse from '../src/parse';
+import { parse } from '../src/parse';
 
 it('parse week ww', () => {
   const inputs = ['2019-01', '2019-22', '2019-52'];
@@ -25,10 +25,12 @@ it('parse week w', () => {
   });
 });
 
-it('timezone with zero', () => {
-  const input = '2018-05-02 +0000';
+it('timezone', () => {
+  const inputs = ['1984-04-01 +0000', '1984-04-01 +0200', '1984-04-01 -0200'];
   const fmt = 'YYYY-MM-DD ZZ';
-  expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
+  inputs.forEach(input => {
+    expect(parse(input, fmt).valueOf()).toBe(moment(input, fmt).valueOf());
+  });
 });
 
 it('incorrect weekday', () => {

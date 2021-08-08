@@ -1,6 +1,6 @@
 import moment from 'moment';
-import format from '../src/format';
-import parse from '../src/parse';
+import { format } from '../src/format';
+import { parse } from '../src/parse';
 import zhCN from '../src/locale/zh-cn';
 
 it('format full', () => {

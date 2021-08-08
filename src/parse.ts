@@ -216,6 +216,20 @@ function getFullInputArray(input: Array<number | undefined>, backupDate = new Da
   return result;
 }
 
+function createDate(y: number, m: number, d: number, h: number, M: number, s: number, ms: number) {
+  let date;
+  if (y < 100 && y >= 0) {
+    date = new Date(y + 400, m, d, h, M, s, ms);
+    if (isFinite(date.getFullYear())) {
+      date.setFullYear(y);
+    }
+  } else {
+    date = new Date(y, m, d, h, M, s, ms);
+  }
+
+  return date;
+}
+
 function createUTCDate(...args: DateArgs) {
   let date: Date;
   const y = args[0];
@@ -262,7 +276,7 @@ function makeParser(dateString: string, format: string, locale: Locale) {
   return mark;
 }
 
-export default function parse(
+export function parse(
   str: string,
   format: string,
   options: { locale?: Locale; backupDate?: Date } = {}
@@ -299,10 +313,16 @@ export default function parse(
       return new Date(firstDate.getTime() + (week - 1) * 7 * 24 * 3600 * 1000);
     }
 
-    const utcDate = createUTCDate(...getFullInputArray(inputArray, backupDate));
-    const offsetMilliseconds =
-      (offset === undefined ? utcDate.getTimezoneOffset() : offset) * 60 * 1000;
-    const parsedDate = new Date(utcDate.getTime() + offsetMilliseconds);
+    let parsedDate: Date;
+
+    const result = getFullInputArray(inputArray, backupDate);
+
+    if (offset !== undefined) {
+      result[6] += offset * 60 * 1000;
+      parsedDate = createUTCDate(...result);
+    } else {
+      parsedDate = createDate(...result);
+    }
     // check weekday
     if (weekday !== undefined && parsedDate.getDay() !== weekday) {
       return new Date(NaN);
