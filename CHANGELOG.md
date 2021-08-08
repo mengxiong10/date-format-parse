@@ -1,3 +1,12 @@
+## [0.2.7](https://github.com/mengxiong10/date-format-parse/compare/v0.2.6...v0.2.7) (2021-08-08)
+
+
+### Bug Fixes
+
+* round the timezone offset ([27dc7da](https://github.com/mengxiong10/date-format-parse/commit/27dc7dab170cdb83ac2a313bd0c6b5d9ce0a0f9b))
+
+
+
 ## [0.2.6](https://github.com/mengxiong10/date-format-parse/compare/v0.2.5...v0.2.6) (2020-11-17)
 
 
