@@ -4,7 +4,7 @@ import defaultLocale from './locale/en';
 
 import { startOfWeekYear } from './util';
 
-const formattingTokens = /(\[[^\[]*\])|(MM?M?M?|Do|DD?|ddd?d?|w[o|w]?|YYYY|YY|a|A|hh?|HH?|mm?|ss?|S{1,3}|x|X|ZZ?|.)/g;
+const formattingTokens = /(\[[^\[]*\])|(YYYY|Y{1,2}|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|m{1,2}|s{1,2}|Z{1,2}|S{1,3}|w{1,2}|x|X|a|A|.)/g;
 
 const match1 = /\d/; // 0 - 9
 const match2 = /\d\d/; // 00 - 99
@@ -247,7 +247,7 @@ function createUTCDate(...args: DateArgs) {
   return date;
 }
 
-function makeParser(dateString: string, format: string, locale: Locale) {
+function makeParser(dateString: string, format: string, locale: Locale, nonStrict: boolean) {
   const tokens = format.match(formattingTokens);
   if (!tokens) {
     throw new Error();
@@ -261,6 +261,8 @@ function makeParser(dateString: string, format: string, locale: Locale) {
       const word = token.replace(/^\[|\]$/g, '');
       if (dateString.indexOf(word) === 0) {
         dateString = dateString.substr(word.length);
+      } else if (nonStrict) {
+        dateString.replace(/^[^a-zA-Z0-9]*/g, '');
       } else {
         throw new Error('not match');
       }
@@ -279,11 +281,11 @@ function makeParser(dateString: string, format: string, locale: Locale) {
 export function parse(
   str: string,
   format: string,
-  options: { locale?: Locale; backupDate?: Date } = {}
+  options: { locale?: Locale; backupDate?: Date; lenient?: boolean; nonStrict?: boolean } = {}
 ) {
   try {
-    const { locale = defaultLocale, backupDate = new Date() } = options;
-    const parseResult = makeParser(str, format, locale);
+    const { locale = defaultLocale, backupDate = new Date(), lenient = true, nonStrict = false } = options;
+    const parseResult = makeParser(str, format, locale, nonStrict);
     const {
       year,
       month,
@@ -327,6 +329,20 @@ export function parse(
     if (weekday !== undefined && parsedDate.getDay() !== weekday) {
       return new Date(NaN);
     }
+
+    // check strict date when not lenient
+    if (!lenient && (
+      (year !== undefined && parsedDate.getFullYear() !== year) ||
+      (month !== undefined && parsedDate.getMonth() !== month) ||
+      (day !== undefined && parsedDate.getDate() !== day) ||
+      (hour !== undefined && parsedDate.getHours() !== hour) ||
+      (minute !== undefined && parsedDate.getMinutes() !== minute) ||
+      (second !== undefined && parsedDate.getSeconds() !== second) ||
+      (millisecond !== undefined && parsedDate.getMilliseconds() !== millisecond)
+    )) {
+      return new Date(NaN);
+    } 
+
     return parsedDate;
   } catch (e) {
     return new Date(NaN);
